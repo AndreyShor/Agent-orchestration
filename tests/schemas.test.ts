@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { ZodError } from 'zod';
 import {
   CodeQualityResultSchema,
   TestCoverageResultSchema,
@@ -99,6 +100,16 @@ const validReviewReport = {
 // ---------------------------------------------------------------------------
 
 describe('CodeQualityResultSchema', () => {
+  it('parse() does not throw on valid data', () => {
+    expect(() => CodeQualityResultSchema.parse(validCodeQuality)).not.toThrow();
+  });
+
+  it('parse() throws ZodError on invalid data', () => {
+    expect(() =>
+      CodeQualityResultSchema.parse({ ...validCodeQuality, overallScore: 'not-a-number' })
+    ).toThrow(ZodError);
+  });
+
   it('accepts a valid result', () => {
     expect(CodeQualityResultSchema.safeParse(validCodeQuality).success).toBe(true);
   });
@@ -163,6 +174,16 @@ describe('CodeQualityResultSchema', () => {
 // ---------------------------------------------------------------------------
 
 describe('TestCoverageResultSchema', () => {
+  it('parse() does not throw on valid data', () => {
+    expect(() => TestCoverageResultSchema.parse(validTestCoverage)).not.toThrow();
+  });
+
+  it('parse() throws ZodError on invalid data', () => {
+    expect(() =>
+      TestCoverageResultSchema.parse({ ...validTestCoverage, hasTests: 'yes' })
+    ).toThrow(ZodError);
+  });
+
   it('accepts a valid result', () => {
     expect(TestCoverageResultSchema.safeParse(validTestCoverage).success).toBe(true);
   });
@@ -223,6 +244,16 @@ describe('TestCoverageResultSchema', () => {
 // ---------------------------------------------------------------------------
 
 describe('RefactoringSuggestionSchema', () => {
+  it('parse() does not throw on valid data', () => {
+    expect(() => RefactoringSuggestionSchema.parse(validRefactoring)).not.toThrow();
+  });
+
+  it('parse() throws ZodError on invalid data', () => {
+    expect(() =>
+      RefactoringSuggestionSchema.parse({ ...validRefactoring, suggestions: 'not-an-array' })
+    ).toThrow(ZodError);
+  });
+
   it('accepts a valid result', () => {
     expect(RefactoringSuggestionSchema.safeParse(validRefactoring).success).toBe(true);
   });
@@ -264,6 +295,16 @@ describe('RefactoringSuggestionSchema', () => {
 // ---------------------------------------------------------------------------
 
 describe('ReviewReportSchema', () => {
+  it('parse() does not throw on valid data', () => {
+    expect(() => ReviewReportSchema.parse(validReviewReport)).not.toThrow();
+  });
+
+  it('parse() throws ZodError on invalid data', () => {
+    expect(() =>
+      ReviewReportSchema.parse({ ...validReviewReport, pullRequest: 'not-an-object' })
+    ).toThrow(ZodError);
+  });
+
   it('accepts a valid report', () => {
     expect(ReviewReportSchema.safeParse(validReviewReport).success).toBe(true);
   });
@@ -327,6 +368,12 @@ describe('JSON Schema exports', () => {
     );
   });
 
+  it('CodeQualityResultJSONSchema marks every top-level field as required', () => {
+    const required = (CodeQualityResultJSONSchema as { required?: string[] }).required;
+    expect(required).toEqual(expect.arrayContaining(['file', 'issues', 'overallScore', 'summary']));
+    expect(required).toHaveLength(4);
+  });
+
   it('TestCoverageResultJSONSchema is an object schema with the expected properties', () => {
     expect(TestCoverageResultJSONSchema).toMatchObject({ type: 'object' });
     const props = (TestCoverageResultJSONSchema as { properties?: Record<string, unknown> }).properties;
@@ -335,10 +382,24 @@ describe('JSON Schema exports', () => {
     );
   });
 
+  it('TestCoverageResultJSONSchema marks every top-level field as required', () => {
+    const required = (TestCoverageResultJSONSchema as { required?: string[] }).required;
+    expect(required).toEqual(
+      expect.arrayContaining(['file', 'hasTests', 'testFiles', 'untestedPaths', 'coverageEstimate', 'summary'])
+    );
+    expect(required).toHaveLength(6);
+  });
+
   it('RefactoringSuggestionJSONSchema is an object schema with the expected properties', () => {
     expect(RefactoringSuggestionJSONSchema).toMatchObject({ type: 'object' });
     const props = (RefactoringSuggestionJSONSchema as { properties?: Record<string, unknown> }).properties;
     expect(Object.keys(props ?? {})).toEqual(expect.arrayContaining(['file', 'suggestions', 'summary']));
+  });
+
+  it('RefactoringSuggestionJSONSchema marks every top-level field as required', () => {
+    const required = (RefactoringSuggestionJSONSchema as { required?: string[] }).required;
+    expect(required).toEqual(expect.arrayContaining(['file', 'suggestions', 'summary']));
+    expect(required).toHaveLength(3);
   });
 
   it('ReviewReportJSONSchema is an object schema with the expected top-level properties', () => {
@@ -347,6 +408,14 @@ describe('JSON Schema exports', () => {
     expect(Object.keys(props ?? {})).toEqual(
       expect.arrayContaining(['pullRequest', 'fileReviews', 'summary', 'recommendations', 'metadata'])
     );
+  });
+
+  it('ReviewReportJSONSchema marks every top-level field as required', () => {
+    const required = (ReviewReportJSONSchema as { required?: string[] }).required;
+    expect(required).toEqual(
+      expect.arrayContaining(['pullRequest', 'fileReviews', 'summary', 'recommendations', 'metadata'])
+    );
+    expect(required).toHaveLength(5);
   });
 
   it('none of the JSON schemas have an unresolved $ref at the root', () => {
