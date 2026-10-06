@@ -314,14 +314,41 @@ Dry-run at the end of P3 rather than after P4: the SDK-shape unknowns in §8 are
 
 ## 10. Deliverables checklist (grading)
 
-- [ ] `src/config/mcp.config.ts` — GitHub + ESLint stdio servers, token remapped
-- [ ] `src/agents/{code-quality-analyzer,test-coverage-analyzer,refactoring-suggester,index}.ts` — `AgentDefinition`, `model: 'inherit'`, `Skill` tool, least-privilege tools
-- [ ] `src/prompts/{orchestrator,code-quality-analyzer,test-coverage-analyzer,refactoring-suggester}.prompt.ts` + `index.ts`
-- [ ] `.claude/skills/` — at least 2 new skills (`typescript-patterns`, `security-analysis`)
-- [ ] `src/orchestrator.ts` — `query`, `agents`, `Task` in `allowedTools`, `outputFormat` + `zod-to-json-schema`, `safeParse` validation, aggregation, graceful failure
-- [ ] `src/main.ts` — arg validation, env/auth validation, 3-format report output, meaningful error messages
-- [ ] `src/utils/error-handler.ts` — `withRetry` (exponential backoff + jitter), `withTimeout` (`Promise.race`)
-- [ ] `src/utils/rate-limiter.ts` — all 5 methods, sliding window, concurrency cap
-- [ ] `src/utils/index.ts` — exports uncommented
-- [ ] `tests/` — schema validity, invalid-input rejection, edge cases, JSON-schema exports, mocked integration; `npm test` green
-- [ ] `reports/` — 9 files (3 PRs × json/md/html), all populated and schema-valid
+- [x] `src/config/mcp.config.ts` — GitHub + ESLint stdio servers, token remapped
+- [x] `src/agents/{code-quality-analyzer,test-coverage-analyzer,refactoring-suggester,index}.ts` — `AgentDefinition`, `model: 'inherit'`, `Skill` tool, least-privilege tools
+- [x] `src/prompts/{orchestrator,code-quality-analyzer,test-coverage-analyzer,refactoring-suggester}.prompt.ts` + `index.ts`
+- [x] `.claude/skills/` — added `typescript-patterns`, `security-analysis`, `performance-optimization` (javascript-best-practices was provided)
+- [x] `src/orchestrator.ts` — `query`, `agents`, `Task` in `allowedTools`, `outputFormat` + `zod-to-json-schema`, `safeParse` validation, aggregation, graceful failure
+- [x] `src/main.ts` — arg validation, env/auth validation, 3-format report output, meaningful error messages
+- [x] `src/utils/error-handler.ts` — `withRetry` (exponential backoff + jitter), `withTimeout` (`Promise.race`)
+- [x] `src/utils/rate-limiter.ts` — all 5 methods, sliding window, concurrency cap
+- [x] `src/utils/index.ts` — exports uncommented
+- [x] `tests/` — schema validity, invalid-input rejection, edge cases, JSON-schema exports, mocked integration; `npm test` green (40 passed, 1 skipped)
+- [ ] `reports/` — 9 files (3 PRs × json/md/html), all populated and schema-valid — **blocked: no `ANTHROPIC_API_KEY` in this environment, see §11**
+
+## 11. Phase 5 status — blocked on credentials
+
+Phases 0–4 are fully implemented, typecheck clean (`npm run lint`), and tested
+(`npm test`: 40 passed, 1 skipped). Node.js v24.19.0 LTS was installed via
+winget (this machine had none).
+
+Phase 5 (the 9 required PR review reports) cannot run: this environment has
+no `ANTHROPIC_API_KEY` / AWS Bedrock credentials and no `GITHUB_TOKEN`. `main.ts`
+correctly detects this and exits with a clear message (verified by smoke
+test) rather than failing silently.
+
+To unblock: add to `.env`
+```
+ANTHROPIC_API_KEY=sk-ant-...
+GITHUB_TOKEN=ghp_...   # recommended, avoids anonymous GitHub rate limits
+```
+then run:
+```
+npm run dev udacity cd14715-simple-todo-app 1
+npm run dev udacity cd14715-simple-todo-app 2
+npm run dev udacity cd14715-simple-todo-app 3
+```
+Per §7, the first run should be treated as the dry run that settles the
+remaining open items (GitHub MCP tool names actually exposed, and whether
+fetching file content inline in the Task prompt is sufficient vs. needing a
+local checkout of the PR branch) before trusting runs 2 and 3.
