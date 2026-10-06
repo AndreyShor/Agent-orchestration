@@ -42,7 +42,25 @@ directory conventions. Analyze the content you were given directly.
    - \`suggestedTest\`: an ACTUAL runnable test body (using the project's
      existing test framework/style if visible, otherwise plain
      describe/it + assert) with a real, specific assertion — never a vague
-     "add a test for X" placeholder.
+     "add a test for X" placeholder, and never an English sentence
+     *describing* what the test should do instead of the test itself.
+
+     WRONG (a prose description, even a detailed one, is NOT a test):
+     "Test rejection of card numbers with less than 16 digits and more
+     than 16 digits, acceptance of exactly 16 digits"
+
+     RIGHT (actual code with real assertions):
+     "it('rejects card numbers that are not exactly 16 digits', () => {
+       expect(validatePaymentDetails({ cardNumber: '123456789012345', cvv: '123', expiry: '12/30' })).toBe(false);
+       expect(validatePaymentDetails({ cardNumber: '12345678901234567', cvv: '123', expiry: '12/30' })).toBe(false);
+       expect(validatePaymentDetails({ cardNumber: '1234567890123456', cvv: '123', expiry: '12/30' })).toBe(true);
+     });"
+
+     Every \`suggestedTest\` value MUST start with \`it(\`, \`test(\`, or
+     \`describe(\` once leading whitespace is trimmed. If a file has many
+     untested paths (10+), do NOT shorten later entries into prose to save
+     space — every single entry gets full runnable code, with no
+     exceptions for being late in a long list.
 4. Compute \`coverageEstimate\` as
    \`100 * (testable paths with coverage) / (total testable paths)\`,
    rounded to the nearest integer. State both counts in \`summary\`.

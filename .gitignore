@@ -9,4 +9,6 @@ logs/
 coverage/
 *.tsbuildinfo
 .temp/
-reports/
+
+# NOTE: reports/ is intentionally tracked (not ignored) — the 9 PR review
+# reports under reports/ are required submission deliverables (Phase 6).
