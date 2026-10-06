@@ -348,14 +348,32 @@ how often we're allowed to *start* a review at all.
 
 ---
 
-## 6. One open question worth knowing about
+## 6. A design question that got settled empirically
 
 The subagents only have `Read`/`Grep`/`Glob` — tools that see the **local
 filesystem**, not GitHub. For them to analyze a PR's changed files, the
-orchestrator prompt currently tells the orchestrator to fetch each file's
-content via the GitHub MCP server and paste it inline into the `Task` call's
-prompt text, rather than having subagents fetch content themselves. This is
-the one piece of the design that hasn't been validated against a real run
-yet (no API credentials were available while building this) — see
-`plan.md` §7 and §11 for the fallback plan if that assumption doesn't hold
-up on the first live run.
+orchestrator prompt tells the orchestrator to fetch each file's content via
+the GitHub MCP server and paste it inline into the `Task` call's prompt
+text, rather than having subagents fetch content themselves.
+
+This worked on the first live run against all three required PRs
+(`udacity/cd14715-simple-todo-app` #1-3) — no fallback (local PR checkout,
+or giving subagents their own GitHub tools) was needed. See `plan.md` §11
+for the actual results.
+
+A different failure mode showed up instead, one no amount of static
+review would have caught: on the first run of PR #3, the
+`test-coverage-analyzer` subagent quietly degraded into English prose
+descriptions of what a test *should* do instead of writing the test,
+for every one of the 14 untested paths in that file — plausibly because
+that file had more untested paths than #1 or #2 and the model got terser
+under length pressure partway through a long JSON array. The schema
+still validated (`suggestedTest` is typed as `string`, so "Test rejection
+of card numbers with less than 16 digits..." is a perfectly valid
+string) — this is exactly the class of bug §5 above warns about: **you
+cannot catch a subagent's semantic drift with a unit test**, only by
+reading real output. The fix was adding a concrete wrong/right example
+and a hard syntactic rule to the prompt
+(`src/prompts/test-coverage-analyzer.prompt.ts`), then re-running; the
+second run produced real `describe`/`it`/`expect` code for all 21
+untested paths it found.

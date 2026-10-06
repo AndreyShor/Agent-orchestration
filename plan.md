@@ -323,32 +323,40 @@ Dry-run at the end of P3 rather than after P4: the SDK-shape unknowns in §8 are
 - [x] `src/utils/error-handler.ts` — `withRetry` (exponential backoff + jitter), `withTimeout` (`Promise.race`)
 - [x] `src/utils/rate-limiter.ts` — all 5 methods, sliding window, concurrency cap
 - [x] `src/utils/index.ts` — exports uncommented
-- [x] `tests/` — schema validity, invalid-input rejection, edge cases, JSON-schema exports, mocked integration; `npm test` green (40 passed, 1 skipped)
-- [ ] `reports/` — 9 files (3 PRs × json/md/html), all populated and schema-valid — **blocked: no `ANTHROPIC_API_KEY` in this environment, see §11**
+- [x] `tests/` — schema validity, invalid-input rejection, edge cases, JSON-schema exports, mocked integration; `npm test` green (52 passed, 1 skipped)
+- [x] `reports/` — 9 files (3 PRs × json/md/html), all populated and schema-valid — see §11
 
-## 11. Phase 5 status — blocked on credentials
+## 11. Phase 6 status — complete
 
-Phases 0–4 are fully implemented, typecheck clean (`npm run lint`), and tested
-(`npm test`: 40 passed, 1 skipped). Node.js v24.19.0 LTS was installed via
-winget (this machine had none).
+All three PRs against `udacity/cd14715-simple-todo-app` were reviewed live
+(no mocking, real `ANTHROPIC_API_KEY`, real GitHub MCP fetches):
 
-Phase 5 (the 9 required PR review reports) cannot run: this environment has
-no `ANTHROPIC_API_KEY` / AWS Bedrock credentials and no `GITHUB_TOKEN`. `main.ts`
-correctly detects this and exits with a clear message (verified by smoke
-test) rather than failing silently.
+| PR | File reviewed | overallScore | criticalIssues | highPriorityTests | refactoringOpportunities |
+|---|---|---|---|---|---|
+| #1 "add clean code fixture" | `fixtures/clean-code.ts` | 82 | 0 | 6 | 5 |
+| #2 "Add search functionality for todos" | `src/todo.ts` | 0 | 3 (real SQL injection ×3 + IDOR ×3) | 6 | 8 |
+| #3 "Add premium subscription features" | `src/premium.ts` | 0 | 2 | 21 | 8 |
 
-To unblock: add to `.env`
-```
-ANTHROPIC_API_KEY=sk-ant-...
-GITHUB_TOKEN=ghp_...   # recommended, avoids anonymous GitHub rate limits
-```
-then run:
-```
-npm run dev udacity cd14715-simple-todo-app 1
-npm run dev udacity cd14715-simple-todo-app 2
-npm run dev udacity cd14715-simple-todo-app 3
-```
-Per §7, the first run should be treated as the dry run that settles the
-remaining open items (GitHub MCP tool names actually exposed, and whether
-fetching file content inline in the Task prompt is sufficient vs. needing a
-local checkout of the PR branch) before trusting runs 2 and 3.
+All 9 files in `reports/` verified with a throwaway script
+(`ReviewReportSchema.safeParse` on every JSON, positive-integer line numbers,
+non-empty descriptions, `suggestedTest` matches real test-code syntax,
+`before !== after` on every refactoring, and the `summary` block
+recomputed from raw `fileReviews` and diffed against the stored one) —
+all pass. `reports/` was removed from `.gitignore` since these are
+required submission deliverables, not build output.
+
+One real defect surfaced and was fixed during this phase: PR #3's first
+run had `test-coverage-analyzer` degrade into English prose descriptions
+instead of runnable test code for all 14 untested paths in
+`src/premium.ts` (likely due to length pressure — that file had more
+untested paths than #1 or #2). Fixed by strengthening
+`src/prompts/test-coverage-analyzer.prompt.ts` with a concrete wrong/right
+example and a hard syntactic rule (`suggestedTest` must start with
+`it(`/`test(`/`describe(`), then re-ran PR #3 — all 21 untested paths now
+carry real `describe`/`it`/`expect` code. This is exactly the class of
+failure `plan.md`'s original framing anticipated could only be caught
+empirically, not in a unit test (see §9's "Known risks" and §5 in
+`HOW-IT-WORKS.md`).
+
+The GitHub MCP + inline-file-content approach from §7 worked without any
+fallback needed — no local PR checkout was required.
