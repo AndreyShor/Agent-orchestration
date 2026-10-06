@@ -75,7 +75,7 @@ async function main() {
     const reportsDir = path.resolve(process.cwd(), 'reports');
     fs.mkdirSync(reportsDir, { recursive: true });
 
-    const baseName = `pr-${prNumber}-review`;
+    const baseName = `${owner}_${repo}_${prNumber}`;
     const outputs: Array<[string, string]> = [
       [`${baseName}.json`, reportGenerator.generateJSONReport(report)],
       [`${baseName}.md`, reportGenerator.generateMarkdownReport(report)],

@@ -105,7 +105,7 @@ lives in prompts, not in your language's control flow.**
                                    │
                                    ▼
           src/main.ts hands it to ReportGenerator → writes
-          reports/pr-<n>-review.{json,md,html}
+          reports/<owner>_<repo>_<prNumber>.{json,md,html}
 ```
 
 Three nested "agentic loops" are running across one logical review: the

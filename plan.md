@@ -60,7 +60,7 @@ Note the field is `refactorings` inside `fileReviews` while the schema is named 
 | Where does the code live? | Copy `project/starter/**` into this repo root, commit as baseline, implement on top | keeps a clean starter-vs-my-work diff; rubric expects `src/agents/...` paths |
 | Run locally or on Vocareum? | Implement + unit-test locally on Windows; generate the 9 reports wherever the API key lives | MCP `npx` servers work on Windows, but the GitHub MCP server is the risk point (§7) |
 | Subagents parallel or serial? | Parallel per file (all three Task calls issued in one turn), files processed in small sequential batches | matches the rubric and is what the rate limiter exists to protect |
-| Report naming | `reports/pr-<n>-review.{json,md,html}` → 9 files | predictable for a grader |
+| Report naming | `reports/<owner>_<repo>_<prNumber>.{json,md,html}` → 9 files | predictable for a grader |
 
 ---
 
@@ -242,7 +242,7 @@ Implement the five stubs exactly as their TODOs describe:
 - Parse `owner`, `repo`, `prStr`; validate presence; `Number.parseInt` + `Number.isInteger` + `> 0`; print usage and `process.exit(1)` on bad input.
 - Auth validation: accept **either** `ANTHROPIC_API_KEY` **or** (`AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + `AWS_REGION`); log `🔐 Using Anthropic API authentication` / `🔐 Using AWS Bedrock authentication`; exit showing both options if neither is present.
 - Require `ANTHROPIC_MODEL`; exit with the Bedrock vs. direct-API examples if missing.
-- Run the orchestrator, then `new ReportGenerator()` and write all three formats to `reports/pr-<n>-review.{json,md,html}` (create the dir first).
+- Run the orchestrator, then `new ReportGenerator()` and write all three formats to `reports/<owner>_<repo>_<prNumber>.{json,md,html}` (create the dir first).
 - `catch`: use `formatError`, log via `logReviewError`, `process.exit(1)` with a human message that distinguishes PR-not-found, rate-limited, timeout, and validation-failed.
 
 ### 6.4 Tests (`tests/`)
