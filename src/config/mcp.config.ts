@@ -1,3 +1,5 @@
+import type { McpServerConfig } from '@anthropic-ai/claude-agent-sdk';
+
 /**
  * Model Context Protocol (MCP) server configurations
  *
@@ -11,32 +13,33 @@
  * - ESLint MCP: https://eslint.org/docs/latest/use/mcp
  */
 
-export const mcpServersConfig = {
+export const mcpServersConfig: Record<string, McpServerConfig> = {
   /**
    * GitHub MCP Server
-   * Provides tools for GitHub API operations
+   * Provides tools for GitHub API operations (fetching PR metadata,
+   * changed files, diffs, review comments, etc.)
    *
-   * TODO: Configure with:
-   * - type: 'stdio' as const
-   * - command: 'npx'
-   * - args: ['-y', '@modelcontextprotocol/server-github']
-   * - env: { GITHUB_PERSONAL_ACCESS_TOKEN: process.env.GITHUB_TOKEN || '' }
-   *
-   * Note: GITHUB_TOKEN is optional (recommended for private repos and higher rate limits).
-   * The GitHub MCP server expects GITHUB_PERSONAL_ACCESS_TOKEN as the env var name.
-   * We map our GITHUB_TOKEN from .env to this expected name.
+   * Note: GITHUB_TOKEN is optional (recommended for private repos and higher
+   * rate limits). The GitHub MCP server expects GITHUB_PERSONAL_ACCESS_TOKEN
+   * as its env var name, so we remap our GITHUB_TOKEN from .env to the name
+   * the server actually looks for.
    */
-  github: { },
+  github: {
+    type: 'stdio',
+    command: 'npx',
+    args: ['-y', '@modelcontextprotocol/server-github'],
+    env: { GITHUB_PERSONAL_ACCESS_TOKEN: process.env.GITHUB_TOKEN || '' }
+  },
 
   /**
    * ESLint MCP Server
-   * Provides tools for linting and code quality analysis
-   *
-   * TODO: Configure with:
-   * - type: 'stdio' as const
-   * - command: 'npx'
-   * - args: ['-y', '@eslint/mcp@latest']
-   * - env: {}
+   * Provides tools for linting and code quality analysis.
+   * No authentication required.
    */
-  eslint: { }
+  eslint: {
+    type: 'stdio',
+    command: 'npx',
+    args: ['-y', '@eslint/mcp@latest'],
+    env: {}
+  }
 };
